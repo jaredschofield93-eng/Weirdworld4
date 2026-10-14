@@ -1,0 +1,232 @@
+import { useEffect, useMemo, useState } from 'react';
+import {
+  Bell,
+  Check,
+  ChevronRight,
+  Info,
+  Menu,
+  Play,
+  Plus,
+  Search,
+  Sparkles,
+  X,
+} from 'lucide-react';
+
+type Film = {
+  title: string;
+  image: string;
+  genre: string;
+  duration: string;
+  year: string;
+  accent?: boolean;
+};
+
+const films: Film[] = [
+  {
+    title: 'The Cassette',
+    image: '/images/IMG_3853.jpeg',
+    genre: 'Surreal drama',
+    duration: '18 min',
+    year: '2026',
+  },
+];
+
+const trending = films;
+
+function FilmCard({ film, onPlay }: { film: Film; onPlay: (film: Film) => void }) {
+  return (
+    <article className="film-card group">
+      <button className="film-image-wrap" onClick={() => onPlay(film)} aria-label={`Play ${film.title}`}>
+        <img src={film.image} alt="" className="film-image" />
+        <div className="film-shade" />
+        <span className="film-play"><Play size={16} fill="currentColor" /></span>
+        <span className="film-duration">{film.duration}</span>
+      </button>
+      <div className="film-meta">
+        <h3>{film.title}</h3>
+        <p>{film.year} <span>·</span> {film.genre}</p>
+      </div>
+    </article>
+  );
+}
+
+function FilmRow({ title, eyebrow, items, onPlay }: { title: string; eyebrow: string; items: Film[]; onPlay: (film: Film) => void }) {
+  return (
+    <section className="content-section">
+      <div className="section-heading">
+        <div>
+          <span className="section-eyebrow">{eyebrow}</span>
+          <h2>{title}</h2>
+        </div>
+        <button className="view-all">View all <ChevronRight size={16} /></button>
+      </div>
+      <div className="film-grid">
+        {items.map((film) => <FilmCard key={`${title}-${film.title}`} film={film} onPlay={onPlay} />)}
+      </div>
+    </section>
+  );
+}
+
+function App() {
+  const [query, setQuery] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [notice, setNotice] = useState('');
+  const [videoOpen, setVideoOpen] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
+  const [introVisible, setIntroVisible] = useState(true);
+
+  const searchResults = useMemo(() => {
+    const normalized = query.trim().toLowerCase();
+    if (!normalized) return null;
+    return films.filter((film) => `${film.title} ${film.genre}`.toLowerCase().includes(normalized));
+  }, [query]);
+
+  const playFilm = (film: Film) => {
+    setNotice(`Now playing “${film.title}”`);
+    window.setTimeout(() => setNotice(''), 2600);
+  };
+
+  const toggleSaved = () => {
+    setSaved((current) => !current);
+    setNotice(saved ? 'Removed from your list' : 'Added to your list');
+    window.setTimeout(() => setNotice(''), 2600);
+  };
+
+  useEffect(() => {
+    const introTimer = window.setTimeout(() => setIntroVisible(false), 2800);
+    return () => window.clearTimeout(introTimer);
+  }, []);
+
+  useEffect(() => {
+    if (!videoOpen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setVideoOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [videoOpen]);
+
+  const openVideo = () => {
+    setVideoPlaying(false);
+    setVideoOpen(true);
+  };
+
+  const closeVideo = () => {
+    setVideoOpen(false);
+    setVideoPlaying(false);
+  };
+
+  return (
+    <>
+      {introVisible && (
+        <div className="intro-screen" role="status" aria-label="Loading Weird World">
+          <div className="intro-grain" />
+          <div className="intro-line intro-line-left" />
+          <div className="intro-line intro-line-right" />
+          <div className="intro-logo-wrap">
+            <span className="intro-ring" />
+            <img className="intro-logo" src="/images/ChatGPT_Image_Aug_25,_2026_at_12_56_43_PM.jpeg" alt="Weird World" />
+          </div>
+          <p className="intro-wordmark">WEIRD WORLD</p>
+          <button className="intro-skip" onClick={() => setIntroVisible(false)}>Enter the strange</button>
+        </div>
+      )}
+      <div className={introVisible ? 'app-shell app-shell-under-intro' : 'app-shell'}>
+      <header className="topbar">
+        <div className="topbar-inner">
+          <button className="mobile-menu" onClick={() => setMenuOpen((open) => !open)} aria-label="Toggle navigation">
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+          <a href="#top" className="brand" aria-label="Weird World home">
+            <img src="/images/ChatGPT_Image_Aug_25,_2026_at_12_56_43_PM.jpeg" alt="Weird World" />
+          </a>
+          <nav className={menuOpen ? 'main-nav open' : 'main-nav'}>
+            <a className="active" href="#top">Home</a>
+            <a href="#trending">Films</a>
+          </nav>
+          <div className="topbar-actions">
+            <label className="search-box">
+              <Search size={17} />
+              <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search films" aria-label="Search films" />
+            </label>
+            <button className="icon-button" aria-label="Notifications"><Bell size={18} /></button>
+                      </div>
+        </div>
+      </header>
+
+      <main id="top">
+        <section className="hero">
+          <div className="hero-gradient" />
+          <img className="hero-logo-mark" src="/images/ChatGPT_Image_Aug_25,_2026_at_12_56_43_PM.jpeg" alt="" aria-hidden="true" />
+          <div className="hero-content">
+            <div className="hero-kicker"><span className="kicker-line" /> <span>WEIRD WORLD ORIGINAL</span></div>
+            <h1>The<br /><em>Cassette</em></h1>
+            <p className="hero-copy">Two friends find a cassette in the park. But what they hear on it becomes a disturbing mystery.</p>
+            <div className="hero-details"><span>2026</span><i /> <span>18 min</span><i /> <span className="rated">16</span><i /> <span>Surreal drama</span></div>
+            <div className="hero-actions">
+              <button className="primary-button" onClick={openVideo}><Play size={17} fill="currentColor" /> Play film</button>
+              <button className="secondary-button" onClick={toggleSaved}>{saved ? <Check size={17} /> : <Plus size={17} />} {saved ? 'In your list' : 'My list'}</button>
+              <button className="info-button" aria-label="More information"><Info size={19} /></button>
+            </div>
+          </div>
+          <div className="hero-caption"><Sparkles size={14} /> Curated for the curious</div>
+        </section>
+
+        <div className="content-wrap">
+          {searchResults ? (
+            <section className="search-results content-section">
+              <div className="section-heading"><div><span className="section-eyebrow">SEARCH RESULTS</span><h2>Films for “{query}”</h2></div></div>
+              {searchResults.length > 0 ? <div className="film-grid">{searchResults.map((film) => <FilmCard key={film.title} film={film} onPlay={playFilm} />)}</div> : <p className="empty-state">No films found. Try a mood, genre, or another title.</p>}
+            </section>
+          ) : (
+            <>
+              <FilmRow title="Trending" eyebrow="RIGHT NOW" items={trending} onPlay={playFilm} />
+              <section className="featured-film content-section" aria-labelledby="featured-film-title">
+                <div className="featured-film-thumb">
+                  <iframe
+                    className="featured-film-inline-video"
+                    src="https://www.youtube-nocookie.com/embed/yF2r4_Twe_k?controls=1&modestbranding=1&rel=0&playsinline=1"
+                    title="The Cassette"
+                    allow="autoplay; encrypted-media; picture-in-picture"
+                  />
+                </div>
+                <div className="featured-film-copy">
+                  <span className="section-eyebrow">WEIRD WORLD ORIGINAL</span>
+                  <h2 id="featured-film-title">The Cassette</h2>
+                  <p>Two friends find a cassette in the park. But what they hear on it becomes a disturbing mystery.</p>
+                  <button className="featured-film-action" onClick={openVideo}><Play size={14} fill="currentColor" /> Watch now</button>
+                </div>
+              </section>
+            </>
+          )}
+        </div>
+      </main>
+
+      {videoOpen && (
+        <div className="video-modal" role="dialog" aria-modal="true" aria-label="Now playing The Cassette" onClick={closeVideo}>
+          <button className="video-close" onClick={(event) => { event.stopPropagation(); closeVideo(); }} aria-label="Close video"><X size={24} /></button>
+          <div className="video-frame-wrap" onClick={(event) => event.stopPropagation()}>
+            {videoPlaying ? (
+              <iframe
+                className="video-frame"
+                src="https://www.youtube-nocookie.com/embed/yF2r4_Twe_k?autoplay=1&controls=0&disablekb=1&modestbranding=1&rel=0&playsinline=1&iv_load_policy=3&fs=0"
+                title="The Cassette"
+                allow="autoplay; encrypted-media; picture-in-picture"
+              />
+            ) : (
+              <button className="video-poster" onClick={() => setVideoPlaying(true)} aria-label="Play video">
+                <img src="https://img.youtube.com/vi/yF2r4_Twe_k/maxresdefault.jpg" alt="" />
+                <span className="video-poster-play"><Play size={22} fill="currentColor" /></span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+      {notice && <div className="notice"><Check size={16} /> {notice}</div>}
+      </div>
+    </>
+  );
+}
+
+export default App;
